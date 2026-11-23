@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CEI Opportunity Radar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{
+  --bg:#141a1b;--panel:#1c2729;--line:#344547;
+  --text:#f1f4f3;--muted:#b3c4c6;--orange:#e87722;
+  --turquoise:#29a3b7;--green:#a2ad00;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text)}
+body{font-family:Roboto,Arial,sans-serif}
+button,select{font:inherit}
+.dashboard{
+  height:100dvh;min-height:620px;padding:22px 30px 14px;
+  display:grid;grid-template-rows:auto auto minmax(0,1fr) 86px auto;
+  gap:13px;max-width:2400px;margin:auto;
+}
+header{display:flex;align-items:center;gap:24px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.logo{width:190px;max-height:72px;object-fit:contain}
+.identity{border-left:1px solid var(--line);padding-left:24px;min-width:0}
+h1{margin:0;font-size:clamp(25px,2.5vw,44px);letter-spacing:-1.2px}
+h1 span{color:var(--orange)}
+.subtitle{margin-top:7px;font-size:15px;color:var(--muted)}
+.status-area{margin-left:auto;text-align:right;flex-shrink:0}
+.status{font-size:13px;color:#d9e4be;background:#28321d;padding:7px 12px;border-radius:30px}
+.status.error{background:#492d24;color:#ffd5be}
+.checked{font-size:12px;color:var(--muted);margin-top:7px}
+.clock{font-size:28px;font-weight:700;border-left:1px solid var(--line);padding-left:22px;white-space:nowrap}
+.filterbar{display:flex;align-items:center;gap:14px;border:1px solid var(--line);background:#1b3031;border-radius:5px;overflow:hidden;min-height:44px}
+.desk{align-self:stretch;display:flex;align-items:center;background:var(--orange);color:#171d1e;font-size:13px;font-weight:900;letter-spacing:1px;padding:12px 18px}
+.filterbar label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+select{max-width:360px;width:30vw;background:#244241;border:1px solid #4c6967;border-radius:4px;padding:8px;color:var(--text)}
+.count{margin-left:auto;font-size:13px;color:var(--muted)}
+.source{padding-right:16px;font-size:13px;white-space:nowrap}
+main{min-height:0;display:grid;grid-template-columns:minmax(0,1.7fr) minmax(290px,1fr);gap:18px}
+.card{border:1px solid var(--line);border-radius:7px;background:var(--panel);min-width:0;overflow:hidden}
+.feature{border-top:4px solid var(--turquoise);padding:22px;display:flex;flex-direction:column;gap:13px}
+.eyebrow{color:#7bcbd7;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase}
+h2{font-size:clamp(24px,2.5vw,42px);line-height:1.15;margin:0;letter-spacing:-.6px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.agency{color:var(--muted);font-size:14px;line-height:1.4}
+.badges{display:flex;flex-wrap:wrap;gap:7px}
+.badge{font-size:12px;padding:6px 9px;border:1px solid #416067;background:#20373b;border-radius:3px;color:#bfe3e8}
+.badge.review{background:#352d23;border-color:#645039;color:#f2cc9c}
+.focus{border-left:4px solid var(--turquoise);background:#172426;padding:13px 15px;min-height:0}
+.label{font-size:11px;font-weight:700;letter-spacing:1.3px;color:#8fbac1;text-transform:uppercase;margin-bottom:8px}
+.description{font-size:clamp(15px,1.2vw,21px);line-height:1.45;margin:0;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.action{margin-top:auto;padding-top:14px;border-top:1px solid var(--line);display:flex;align-items:center;gap:20px}
+.requirement{flex:1;min-width:0}
+.requirement p{font-size:15px;color:var(--muted);line-height:1.45;margin:0}
+.reference{font-size:11px;color:#a3b4b6;margin-top:12px;overflow-wrap:anywhere}
+.qr-area{text-align:center;flex:0 0 132px}
+.qr-box{width:124px;height:124px;background:white;border-radius:5px;padding:7px;margin:auto}
+.qr-box img,.qr-box canvas{width:110px!important;height:110px!important}
+.qr-area a{font-size:11px;color:var(--muted);display:block;margin-top:7px;text-decoration:none}
+.details{border-top:4px solid var(--orange);padding:22px;display:flex;flex-direction:column;gap:20px}
+.amount{font-size:clamp(24px,2.4vw,40px);font-weight:700;line-height:1.1}
+.note{font-size:12px;color:var(--muted);line-height:1.45;margin-top:8px}
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:18px;border-top:1px solid var(--line);padding-top:18px}
+.fact-value{font-size:19px;font-weight:700;line-height:1.25}
+.queue{margin-top:auto;border-top:1px solid var(--line);padding-top:15px}
+.queue-item{border-left:3px solid var(--turquoise);padding:8px 11px;margin-top:9px;background:#182325}
+.queue-item:nth-child(3){border-color:var(--green)}
+.queue-title{font-size:15px;line-height:1.3;font-weight:500;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.queue-date{font-size:12px;color:var(--muted);margin-top:6px}
+.message{grid-column:1/-1;display:flex;justify-content:center;align-items:center;text-align:center;padding:30px}
+.message h2{display:block;margin-bottom:18px}
+.message p{color:var(--muted);line-height:1.6;max-width:650px}
+.message button{background:var(--orange);border:0;padding:12px 20px;border-radius:4px;cursor:pointer}
+.wire{display:flex;background:#1b3b3d;border:1px solid #426264;border-top:4px solid var(--turquoise);border-radius:5px;overflow:hidden;min-width:0}
+.wire-label{position:relative;z-index:1;background:var(--orange);color:#142023;min-width:175px;padding:18px;font-size:16px;font-weight:900}
+.wire-label small{display:block;font-size:11px;font-weight:400;margin-top:5px}
+.ticker-window{overflow:hidden;flex:1;display:flex;align-items:center;min-width:0}
+.ticker-track{display:flex;width:max-content;animation:wire-scroll 140s linear infinite;will-change:transform}
+.ticker-group{display:flex;align-items:center;flex-shrink:0}
+.ticker-item{display:flex;align-items:center;gap:14px;padding:0 24px;white-space:nowrap}
+.ticker-item:after{content:"◆";color:var(--orange);margin-left:20px;font-size:10px}
+.ticker-sector{font-size:11px;text-transform:uppercase;color:#95d6de}
+.ticker-title{font-size:17px;font-weight:500}
+.ticker-date{font-size:12px;color:#d0dedf}
+@keyframes wire-scroll{to{transform:translateX(-50%)}}
+footer{display:flex;align-items:center;gap:12px;min-width:0}
+.footer-source{color:var(--muted);font-size:11px;flex:1}
+.rotation{font-size:12px;color:var(--muted);white-space:nowrap}
+.controls{display:flex;gap:7px}
+.controls button{width:36px;height:32px;border:1px solid #647b78;background:#26423d;color:white;border-radius:4px;cursor:pointer;font-size:18px}
+.controls button:hover{background:#3d6259}
+.progress{position:fixed;bottom:0;left:0;height:3px;background:var(--turquoise);width:0}
+@media(max-height:800px){
+.dashboard{padding:14px 22px 10px;gap:10px}
+.logo{width:160px;max-height:57px}
+header{padding-bottom:11px;gap:18px}
+.feature,.details{padding:16px;gap:10px}
+h2{font-size:clamp(23px,2.3vw,34px)}
+.description{-webkit-line-clamp:3;font-size:15px}
+.qr-area{flex-basis:112px}
+.qr-box{width:104px;height:104px;padding:7px}
+.qr-box img,.qr-box canvas{width:90px!important;height:90px!important}
+.action{padding-top:10px}
+.requirement p{font-size:13px}
+.details{gap:14px}
+.queue-title{font-size:13px}
+}
+@media(max-width:900px){
+.dashboard{height:auto;min-height:100dvh;padding:16px;grid-template-rows:auto auto auto 80px auto}
+header{flex-wrap:wrap;gap:12px}
+.logo{width:140px}
+.identity{padding-left:12px}
+.status-area{margin-left:0}
+.clock{margin-left:auto}
+.filterbar{flex-wrap:wrap;padding-bottom:8px;gap:8px}
+.desk{min-height:42px}
+select{width:60%;max-width:none}
+.count{margin-left:12px}
+.source{margin-left:auto}
+main{grid-template-columns:1fr}
+.feature{min-height:480px}
+.details{min-height:330px}
+.footer-source{font-size:10px}
+.rotation{font-size:10px}
+.wire-label{min-width:135px;padding:16px 12px}
+}
+</style>
+</head>
+<body>
+<div class="dashboard">
+<header>
+  <img class="logo" src="cei-logo.png" alt="CEI — Center for Entrepreneurial Innovation">
+  <div class="identity">
+    <h1><span>CEI</span> Opportunity Radar</h1>
+    <div class="subtitle" id="subtitle">Federal funding · All industries</div>
+  </div>
+  <div class="status-area">
+    <div class="status" id="status" role="status">Connecting to Grants.gov</div>
+    <div class="checked" id="checked">Awaiting a successful source check</div>
+  </div>
+  <div class="clock" id="clock"></div>
+</header>
+
+<div class="filterbar">
+  <div class="desk">FUNDING DESK</div>
+  <label for="industry">Industry</label>
+  <select id="industry" aria-label="Filter by industry"></select>
+  <div class="count" id="count">Retrieving official data</div>
+  <div class="source">Source: <strong>Grants.gov</strong></div>
+</div>
+
+<main id="stage" aria-label="Funding opportunity display"></main>
+
+<div class="wire" aria-label="More funding opportunities">
+  <div class="wire-label">FUNDING WIRE<small id="wireScope">Across the sectors</small></div>
+  <div class="ticker-window"><div class="ticker-track" id="ticker"></div></div>
+</div>
+
+<footer>
+  <div class="footer-source">Source: Grants.gov · Confirm full eligibility and the next submission deadline</div>
+  <div class="rotation" id="rotation"></div>
+  <div class="controls">
+    <button id="previous" aria-label="Previous slide">‹</button>
+    <button id="pause" aria-label="Pause slides" title="Pause slides; ticker continues">Ⅱ</button>
+    <button id="next" aria-label="Next slide">›</button>
+  </div>
+</footer>
+</div>
+<div class="progress" id="progress"></div>
+
+<script>
+"use strict";
+
+const SECTORS = [
+  {id:"Semiconductors",label:"Semiconductors & electronics",pattern:/semiconductor|microelectronic|\bchips?\b|photonics|quantum|integrated circuit/i},
+  {id:"Devices",label:"Medical devices & diagnostics",pattern:/medical device|diagnostic|neuromodulat|neurostimulat|biosensor|medical.*prototype/i},
+  {id:"Biotech",label:"Biotech & life sciences",pattern:/biotech|biolog|drug|therap|neuro|cancer|genom|cellular|molecular|biomedical|assay/i},
+  {id:"Health",label:"Health & digital health",pattern:/health|clinical|patient|disease|\bcare\b|telehealth|\bHHS\b/i},
+  {id:"Defense",label:"Defense & aerospace",pattern:/defen[cs]e|aerospace|aviation|air force|\barmy\b|\bnavy\b|\bDARPA\b|\bNASA\b|\bDOD\b|\bDoW\b/i},
+  {id:"Energy",label:"Energy & climate",pattern:/energy|climate|batter|geothermal|solar|hydrogen|carbon|\bDOE\b|\bARPA-E\b/i},
+  {id:"AI",label:"AI & computing",pattern:/artificial intelligence|machine learning|computing|cybersecurity|\bAI\b|software|informatics|data science|computer/i},
+  {id:"Manufacturing",label:"Advanced manufacturing & materials",pattern:/manufactur|robotic|materials|fabrication|additive|industrial process/i},
+  {id:"Agriculture",label:"Agriculture & food",pattern:/agricultur|\bfood\b|\bcrop\b|\bfarm|\bUSDA\b|aquacultur/i}
+];
+
+const API = "https://api.grants.gov/v1/api/";
+const REFRESH_MS = 60 * 60 * 1000;
+const SLIDE_MS = 15000;
+
+const $ = id => document.getElementById(id);
+let items = [];
+let slides = [];
+let position = 0;
+let selectedIndustry = "All";
+let paused = false;
+let remaining = SLIDE_MS;
+let lastTick = performance.now();
+let checkedAt = null;
+let fetching = false;
+
+const escapeHTML = value => String(value ?? "").replace(/[&<>"']/g,
+  char => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char])
+);
+
+function plain(value) {
+  const doc = new DOMParser().parseFromString(String(value || ""), "text/html");
+  return (doc.body.textContent || "").replace(/\s+/g," ").trim();
+}
+
+function sectorIds(hit) {
+  const text = [hit.title,hit.agency,hit.agencyName,hit.agencyCode].filter(Boolean).join(" ");
+  return SECTORS.filter(sector => sector.pattern.test(text)).map(sector => sector.id);
+}
+
+function sectorLabel(item) {
+  const id = selectedIndustry !== "All" ? selectedIndustry : item.sectors[0];
+  return SECTORS.find(sector => sector.id === id)?.label || "Cross-industry";
+}
+
+function parseDate(value) {
+  if (!value) return null;
+  const text = String(value);
+  const match = text.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  const date = match
+    ? new Date(Number(match[3]),Number(match[1])-1,Number(match[2]),23,59,59)
+    : new Date(text);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function dateLabel(value) {
+  const date = parseDate(value);
+  if (!date || date.getFullYear() > new Date().getFullYear()+10) {
+    return "Check next round";
+  }
+  return date.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
+}
+
+function money(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number) || number <= 0) return "Review program terms";
+  if (number >= 1000000) return "$"+Number((number/1000000).toFixed(2))+"M";
+  if (number >= 1000) return "$"+Number((number/1000).toFixed(1))+"K";
+  return "$"+number.toLocaleString("en-US");
+}
+
+function fundingType(item) {
+  if (/\bSTTR\b/i.test(item.title)) return "Partnership opportunity";
+  if (/\bSBIR\b/i.test(item.title)) return "Business funding";
+  if (/research|\bR01\b|\bR21\b|\bU01\b|National Science Foundation/i.test(item.title+" "+item.agency)) {
+    return "Research funding";
+  }
+  return "Funding pathway to review";
+}
+
+function requirement(item) {
+  const text = item.title+" "+item.summary+" "+item.eligibility;
+  if (/clinical trials? not allowed/i.test(text)) {
+    return "Clinical trials are not allowed. Confirm the required starting evidence and development milestone.";
+  }
+  if (/previous.*fund|prior.*fund|continuation/i.test(item.summary)) {
+    return "Check prior-funding requirements: this listing describes continuing previously funded work.";
+  }
+  if (/\bSTTR\b/i.test(item.title)) {
+    return "Confirm small-business requirements and the required research-institution partnership.";
+  }
+  if (/\bSBIR\b/i.test(item.title)) {
+    return "Confirm business size, ownership, principal-investigator rules, and the next submission round.";
+  }
+  return "Confirm the applicant organization, project stage, research team, and next submission deadline.";
+}
+
+async function api(path, body) {
+  // A simple browser POST: the API accepts JSON text without a JSON preflight.
+  const response = await fetch(API+path,{
+    method:"POST",
+    headers:{"Content-Type":"text/plain;charset=UTF-8"},
+    credentials:"omit",
+    body:JSON.stringify(body),
+    signal:AbortSignal.timeout(25000)
+  });
+  if (!response.ok) throw new Error("Grants.gov returned HTTP "+response.status);
+  const result = await response.json();
+  if (result.errorcode !== 0 || !result.data) {
+    throw new Error("Grants.gov returned an unexpected response");
+  }
+  return result.data;
+}
+
+async function collect() {
+  let hits = [];
+  let total = 0;
+
+  for (let start=0;start<5000;start+=500) {
+    const data = await api("search2",{
+      rows:500,
+      startRecordNum:start,
+      keyword:"",
+      oppStatuses:"posted",
+      eligibilities:"23|99"
+    });
+    if (!Array.isArray(data.oppHits)) throw new Error("Missing opportunity list");
+    hits.push(...data.oppHits);
+    total = Number(data.hitCount) || 0;
+    if (hits.length >= total || !data.oppHits.length) break;
+  }
+
+  if (hits.length < total) throw new Error("Source results were incomplete");
+
+  const now = new Date();
+  const pool = [...new Map(hits.filter(hit => {
+    const open = parseDate(hit.openDate);
+    const close = parseDate(hit.closeDate);
+    return (!open || open <= now) &&
+      (!close || close >= now) &&
+      sectorIds(hit).length &&
+      !/academic career|fellowship|career development|research education|conference grant|\bRFI\b|request for information|easement/i.test(hit.title);
+  }).map(hit => [hit.id,hit])).values()];
+
+  const rank = hit => /\bSBIR\b|\bSTTR\b|commercialization/i.test(hit.title) ? 10 :
+    /prototype|technology|development|innovation|manufactur|diagnostic|computing/i.test(hit.title) ? 5 : 0;
+
+  const buckets = SECTORS.map(sector =>
+    pool.filter(hit => sectorIds(hit).includes(sector.id)).sort((a,b) =>
+      rank(b)-rank(a) ||
+      sectorIds(a).length-sectorIds(b).length ||
+      String(a.title).localeCompare(String(b.title))
+    )
+  );
+
+  const chosen = new Map();
+  for (let round=0;round<4;round++) {
+    for (const bucket of buckets) {
+      const hit = bucket.find(candidate => !chosen.has(candidate.id));
+      if (hit) chosen.set(hit.id,hit);
+    }
+  }
+
+  const candidates = [...chosen.values()];
+  const result = [];
+
+  for (let start=0;start<candidates.length;start+=8) {
+    const group = await Promise.all(candidates.slice(start,start+8).map(async hit => {
+      const detail = await api("fetchOpportunity",{opportunityId:Number(hit.id)});
+      const synopsis = detail.synopsis || {};
+      const types = synopsis.applicantTypes || [];
+      if (!types.some(type => ["23","99"].includes(String(type.id)))) return null;
+      return {
+        ...hit,
+        agency:plain(hit.agencyName || hit.agency || detail.owningAgencyName || "See official announcement"),
+        title:plain(hit.title),
+        sectors:sectorIds(hit),
+        summary:plain(synopsis.synopsisDesc),
+        ceiling:synopsis.awardCeiling,
+        eligibility:plain(synopsis.applicantEligibilityDesc),
+        smallBusiness:types.some(type => String(type.id) === "23")
+      };
+    }));
+    result.push(...group.filter(Boolean));
+  }
+
+  return result;
+}
+
+function filtered() {
+  return selectedIndustry === "All"
+    ? items
+    : items.filter(item => item.sectors.includes(selectedIndustry));
+}
+
+function updateFilters() {
+  const options = [{id:"All",label:"All industries"},...SECTORS];
+  $("industry").innerHTML = options.map(option => {
+    const count = option.id === "All" ? items.length :
+      items.filter(item => item.sectors.includes(option.id)).length;
+    return `<option value="${option.id}">${escapeHTML(option.label)} (${count})</option>`;
+  }).join("");
+  $("industry").value = selectedIndustry;
+}
+
+function rebuildSlides() {
+  slides = filtered().slice().sort((a,b) => {
+    const left = parseDate(a.closeDate)?.getTime() || Infinity;
+    const right = parseDate(b.closeDate)?.getTime() || Infinity;
+    return left-right;
+  });
+  position = 0;
+  remaining = SLIDE_MS;
+  const label = SECTORS.find(sector => sector.id === selectedIndustry)?.label || "All industries";
+  $("subtitle").textContent = "Federal funding · "+label;
+  $("count").textContent = slides.length+" opportunities in this selection";
+  $("wireScope").textContent = selectedIndustry === "All" ? "Across the sectors" : label;
+  renderTicker();
+  renderSlide();
+}
+
+function showMessage(title, message, retry=false) {
+  $("stage").innerHTML = `<section class="card message"><div>
+    <div class="eyebrow">CEI Opportunity Radar · Grants.gov</div>
+    <h2>${escapeHTML(title)}</h2>
+    <p>${escapeHTML(message)}</p>
+    ${retry ? '<button id="retry">Retry live connection</button>' : ""}
+  </div></section>`;
+  if (retry) $("retry").addEventListener("click",refresh);
+}
+
+function renderSlide() {
+  if (!slides.length) {
+    showMessage(
+      "No matching opportunities",
+      "No matching listings were found in the current selection. Choose All industries or another sector."
+    );
+    updateRotation();
+    return;
+  }
+
+  const item = slides[position];
+  const url = "https://www.grants.gov/search-results-detail/"+encodeURIComponent(item.id);
+  const nextItems = slides.length > 1
+    ? [1,2].slice(0,Math.min(2,slides.length-1)).map(offset => slides[(position+offset)%slides.length])
+    : [];
+  const close = parseDate(item.closeDate);
+  const days = close ? Math.ceil((close-Date.now())/86400000) : null;
+  const closingSoon = days !== null && days >= 0 && days <= 30;
+  const numericAward = Number(item.ceiling) > 0;
+
+  $("stage").innerHTML = `
+    <section class="card feature">
+      <div class="eyebrow">${closingSoon ? "Closing soon · " : "Sector spotlight · "}${escapeHTML(sectorLabel(item))}</div>
+      <h2>${escapeHTML(item.title)}</h2>
+      <div class="agency">Source: Grants.gov · ${escapeHTML(item.agency)}</div>
+      <div class="badges">
+        <span class="badge">${escapeHTML(fundingType(item))}</span>
+        <span class="badge review">Eligibility review needed</span>
+      </div>
+      <div class="focus">
+        <div class="label">Project focus</div>
+        <p class="description">${escapeHTML(item.summary || "Read the official announcement for the program scope, required activities, and application instructions.")}</p>
+      </div>
+      <div class="action">
+        <div class="requirement">
+          <div class="label" style="color:#c2cc76">Key requirement to check</div>
+          <p>${escapeHTML(requirement(item))}</p>
+          <div class="reference">Grants.gov opportunity ${escapeHTML(item.number || item.id)}</div>
+        </div>
+        <div class="qr-area">
+          <div class="qr-box" id="qr"></div>
+          <a href="${url}" target="_blank" rel="noopener noreferrer">Scan official requirements ↗</a>
+        </div>
+      </div>
+    </section>
+    <aside class="card details">
+      <div>
+        <div class="label">Funding terms</div>
+        <div class="amount">${escapeHTML(money(item.ceiling))}${numericAward ? '<span style="font-size:15px;font-weight:400"> ceiling</span>' : ""}</div>
+        <div class="note">${numericAward ? "Listed award ceiling; review budget rules, award size, and cost-sharing requirements." : "A numeric award ceiling is not provided in the source summary."}</div>
+      </div>
+      <div class="facts">
+        <div>
+          <div class="label">Published listing closes</div>
+          <div class="fact-value">${escapeHTML(dateLabel(item.closeDate))}</div>
+          <div class="note">Individual submission rounds may close earlier.</div>
+        </div>
+        <div>
+          <div class="label">Applicant category</div>
+          <div class="fact-value">${item.smallBusiness ? "Small businesses listed" : "Broad applicant category"}</div>
+          <div class="note">Additional eligibility restrictions apply.</div>
+        </div>
+      </div>
+      <div class="queue">
+        <div class="label">In the queue</div>
+        ${nextItems.length ? nextItems.map(next => `
+          <div class="queue-item">
+            <div class="queue-title">${escapeHTML(next.title)}</div>
+            <div class="queue-date">Listing closes: ${escapeHTML(dateLabel(next.closeDate))}</div>
+          </div>
+        `).join("") : '<div class="note">This is the only opportunity in the current selection.</div>'}
+      </div>
+    </aside>`;
+
+  if (typeof QRCode !== "undefined") {
+    new QRCode($("qr"),{
+      text:url,width:110,height:110,
+      colorDark:"#111111",colorLight:"#ffffff",
+      correctLevel:QRCode.CorrectLevel.M
+    });
+  } else {
+    $("qr").innerHTML = '<div style="color:#222;font-size:12px;padding:12px">QR unavailable<br>Use the official link below</div>';
+  }
+  updateRotation();
+}
+
+function renderTicker() {
+  const list = filtered();
+  const group = `<div class="ticker-group">${list.map(item => `
+    <div class="ticker-item">
+      <span class="ticker-sector">${escapeHTML(sectorLabel(item))}</span>
+      <span class="ticker-title">${escapeHTML(item.title.length>115 ? item.title.slice(0,112)+"…" : item.title)}</span>
+      ${Number(item.ceiling)>0 ? `<span class="ticker-date">${escapeHTML(money(item.ceiling))} ceiling</span>` : ""}
+      <span class="ticker-date">Listed close ${escapeHTML(dateLabel(item.closeDate))}</span>
+    </div>`).join("")}</div>`;
+  $("ticker").innerHTML = list.length ? group+group : "";
+  $("ticker").style.animationDuration = Math.max(70,list.length*11)+"s";
+}
+
+function navigate(direction) {
+  if (!slides.length) return;
+  position = (position+direction+slides.length)%slides.length;
+  remaining = SLIDE_MS;
+  renderSlide();
+  // Navigation deliberately does not change the pause state or ticker.
+}
+
+function updateRotation() {
+  $("rotation").textContent = slides.length
+    ? `${paused ? "Paused" : "Next in "+Math.ceil(remaining/1000)+"s"} · ${position+1} / ${slides.length}`
+    : "";
+  $("progress").style.width = slides.length ? ((SLIDE_MS-remaining)/SLIDE_MS*100)+"%" : "0";
+}
+
+async function refresh() {
+  if (fetching) return;
+  fetching = true;
+  $("status").className = "status";
+  $("status").textContent = "Checking Grants.gov";
+
+  if (!checkedAt) {
+    showMessage(
+      "Connecting to the live funding feed",
+      "Retrieving current opportunities and checking their details. The first load can take up to a minute."
+    );
+  }
+
+  try {
+    const fresh = await collect();
+    items = fresh;
+    checkedAt = new Date();
+    $("status").textContent = "Official data · 60 mins check";
+    $("checked").textContent = "Last checked "+checkedAt.toLocaleString("en-US",{
+      timeZone:"America/Phoenix",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"
+    })+" AZ";
+    updateFilters();
+    rebuildSlides();
+  } catch (error) {
+    console.error("Grants.gov refresh failed:",error);
+    $("status").className = "status error";
+    $("status").textContent = "Live feed unavailable";
+    if (checkedAt) {
+      $("checked").textContent = "Last successful check "+checkedAt.toLocaleString("en-US",{
+        timeZone:"America/Phoenix",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"
+      })+" AZ";
+    }
+    items = [];
+    slides = [];
+    $("ticker").innerHTML = "";
+    $("count").textContent = "Source connection needs attention";
+    updateFilters();
+    showMessage(
+      "Unable to retrieve live funding data",
+      "Check your internet connection and retry. Grants.gov may be temporarily unavailable. No saved opportunities are being displayed.",
+      true
+    );
+    updateRotation();
+  } finally {
+    fetching = false;
+  }
+}
+
+$("industry").addEventListener("change",event => {
+  selectedIndustry = event.target.value;
+  rebuildSlides();
+});
+
+$("previous").addEventListener("click",() => navigate(-1));
+$("next").addEventListener("click",() => navigate(1));
+$("pause").addEventListener("click",() => {
+  paused = !paused;
+  $("pause").textContent = paused ? "▶" : "Ⅱ";
+  $("pause").setAttribute("aria-label",paused ? "Resume slides" : "Pause slides");
+  updateRotation();
+});
+
+document.addEventListener("keydown",event => {
+  if (event.target.matches("select,input,textarea,button")) return;
+  if (event.key === "ArrowLeft") navigate(-1);
+  if (event.key === "ArrowRight") navigate(1);
+});
+
+function tick(now) {
+  const elapsed = now-lastTick;
+  lastTick = now;
+  if (!paused && slides.length) {
+    remaining -= elapsed;
+    if (remaining <= 0) navigate(1);
+  }
+  updateRotation();
+  requestAnimationFrame(tick);
+}
+
+function updateClock() {
+  $("clock").textContent = new Date().toLocaleTimeString("en-US",{
+    timeZone:"America/Phoenix",hour:"numeric",minute:"2-digit"
+  });
+}
+
+updateFilters();
+updateClock();
+setInterval(updateClock,1000);
+setInterval(() => {
+  if (!checkedAt || Date.now()-checkedAt.getTime() >= REFRESH_MS) refresh();
+},5*60*1000);
+window.addEventListener("online",() => {
+  if (!items.length) refresh();
+});
+requestAnimationFrame(tick);
+refresh();
+</script>
+</body>
+</html>
